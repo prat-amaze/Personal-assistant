@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Build / cache
+.cache/
+
+# Mac/Linux temp
+*.swp
+
+# SQLite temp
+*.sqlite3-shm
+*.sqlite3-wal
+
+me/
+assistant.ipynb
