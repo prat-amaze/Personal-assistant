@@ -30,7 +30,8 @@ VALID = [
     "Contact Information",
     "Positions of Responsibility",
     "Professional Summary", 
-    "roles"
+    "roles",
+    "general"
 ]
 
 def normalize(category: str):
@@ -45,13 +46,19 @@ def normalize(category: str):
 # 1. Classifier
 def classify(state):
     prompt = f"""
-Classify the query into one of these categories:
-{", ".join(VALID)}
+        Classify the query into one of these categories:
+        {", ".join(VALID)}
 
-Query: {state["query"]}
+        Rules:
+        - If query is about me → use specific category
+        - If query is greeting / casual / general knowledge → return "general"
+        - If query is NOT about me (e.g. "what is MCP", "what is AI") → return "general"
+        - If query is about whether I know something → use specific category
 
-Return ONLY the category name.
-"""
+        Query: {state["query"]}
+
+        Return ONLY the category name.
+    """
 
     res = llm.invoke(prompt)
     category = normalize(res.content.strip())
@@ -94,6 +101,27 @@ Always answer in first person perspective
 
     return {"answer": res.content}
 
+def general_generate(state):
+    prompt = f"""
+You are an AI assistant representing Pratyush. Answer question is FPP
+
+Rules:
+- You can answer general questions using your own knowledge
+- You can respond to greetings naturally
+- DO NOT make up any personal information about Pratyush
+- If question is about Pratyush and you don't know → say you don't have that info
+
+Query: {state["query"]}
+"""
+
+    res = llm.invoke(prompt)
+    return {"answer": res.content}
+
+def route(state):
+    if state["category"] == "general":
+        return "general_generate"
+    return "retrieve"
+
 
 # ---- Graph ----
 builder = StateGraph(State)
@@ -101,12 +129,22 @@ builder = StateGraph(State)
 builder.add_node("classify", classify)
 builder.add_node("retrieve", retrieve)
 builder.add_node("generate", generate)
+builder.add_node("general_generate", general_generate)
 
 builder.set_entry_point("classify")
-builder.add_edge("classify", "retrieve")
+
+# 👇 conditional edge
+builder.add_conditional_edges(
+    "classify",
+    route,
+    {
+        "general_generate": "general_generate",
+        "retrieve": "retrieve"
+    }
+)
+
 builder.add_edge("retrieve", "generate")
 
-graph = builder.compile()
 
 if __name__ == "__main__":
     queries = [
