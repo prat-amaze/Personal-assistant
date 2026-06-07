@@ -93,6 +93,7 @@ Context:
 
 Question: {state["query"]}
 
+Some Extra Information you might need: Notice period: 60 days
 If the answer is not in the context, say "I don't have that information".
 Always answer in first person perspective
 """
