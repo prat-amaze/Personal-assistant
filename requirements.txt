@@ -6,3 +6,7 @@ langchain-chroma
 langchain-google-genai
 chromadb
 pydantic
+langchain-community
+langchain-core
+chromadb
+dotenv
