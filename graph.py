@@ -145,6 +145,7 @@ builder.add_conditional_edges(
 
 builder.add_edge("retrieve", "generate")
 
+graph = builder.compile()
 
 if __name__ == "__main__":
     queries = [
