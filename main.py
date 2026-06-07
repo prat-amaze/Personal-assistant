@@ -14,10 +14,9 @@ requests_log = defaultdict(list)
 
 def is_rate_limited(ip: str):
     now = time.time()
-    window_start = now - WINDOW
 
     # keep only recent requests
-    requests_log[ip] = [t for t in requests_log[ip] if t > window_start]
+    requests_log[ip] = [t for t in requests_log[ip] if t < WINDOW]
 
     if len(requests_log[ip]) >= RATE_LIMIT:
         return True
@@ -29,7 +28,7 @@ def is_rate_limited(ip: str):
 # ---- Chat Endpoint ----
 @app.get("/chat")
 def chat(q: str, request: Request):
-    ip = request.client.host
+    ip = request.headers.get("x-forwarded-for", request.client.host)
 
     if is_rate_limited(ip):
         raise HTTPException(
